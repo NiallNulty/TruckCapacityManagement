@@ -37,6 +37,10 @@ namespace TruckCapacityManagement
             }
         }
 
+        /// <summary>
+        /// Calls all methods required to attempt to read the selected CSV file.
+        /// </summary>
+        /// <param name="openFileDialog"></param>
         private void TryReadFile(OpenFileDialog openFileDialog)
         {
             // Clear the messages ever time the users tries to read a new file //
