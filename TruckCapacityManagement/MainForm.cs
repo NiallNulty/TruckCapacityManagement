@@ -13,6 +13,7 @@ namespace TruckCapacityManagement
     public partial class MainForm : Form
     {
         private List<Order> orders = new List<Order>();
+        private DateTime orderDate;
 
         public MainForm()
         {
@@ -126,7 +127,7 @@ namespace TruckCapacityManagement
                 "yyyyMMdd",
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.None,
-                out _
+                out orderDate
             );
 
             // If the date is invalid then the file name is invalid //
@@ -220,6 +221,8 @@ namespace TruckCapacityManagement
         /// </summary>
         private void TryCreateNewOrderFiles()
         {
+            lblErrorMessage.Text = string.Empty;
+
             // If there is enough space on the truck for all the orders, let the user know //
             if (ThereIsEnoughCapacityOnTruck(orders.Sum(order => order.OrderQty)))
             {
@@ -253,6 +256,9 @@ namespace TruckCapacityManagement
 
             // If we can successfuly scale back the first order, try create a second order //
             List<Order> secondOrder = GetSecondOrder(firstOrder);
+
+            // Create the two files //
+            CreateNewOrderFiles(firstOrder, secondOrder);
         }
 
         /// <summary>
@@ -391,6 +397,55 @@ namespace TruckCapacityManagement
             }
 
             return secondOrder;
+        }
+
+        #endregion
+
+        #region File Creation
+
+        private void CreateNewOrderFiles(List<Order> firstOrder, List<Order> secondOrder)
+        {
+            try
+            {
+                // Store the new files in a subfolder so they don't overwrite the original order file //
+                string folderName = "NewOrders";
+                Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + folderName);
+
+                // The original file name remains for the first file // 
+                string firstOrderFileName = $"orders-{orderDate.ToString("yyyyMMdd")}.csv";
+
+                // The second file is the same name +1 day //
+                string secondOrderFileName = $"orders-{orderDate.AddDays(1).ToString("yyyyMMdd")}.csv";
+
+                // Write the first file to a csv //
+                using (StreamWriter streamWriter = new StreamWriter($"{folderName}/{firstOrderFileName}"))
+                {
+                    streamWriter.WriteLine($"{nameof(Order.Customer)},{nameof(Order.OrderNumber)},{nameof(Order.ProductCode)},{nameof(Order.OrderQty)}");
+
+                    foreach (Order order in firstOrder)
+                    {
+                        streamWriter.WriteLine($"{order.Customer},{order.OrderNumber},{order.ProductCode},{order.DeliveryQty}");
+                    }
+                }
+
+                // Write the first file to a csv //
+                using (StreamWriter streamWriter = new StreamWriter($"{folderName}/{secondOrderFileName}"))
+                {
+                    streamWriter.WriteLine($"{nameof(Order.Customer)},{nameof(Order.OrderNumber)},{nameof(Order.ProductCode)},{nameof(Order.OrderQty)}");
+
+                    foreach (Order order in secondOrder)
+                    {
+                        streamWriter.WriteLine($"{order.Customer},{order.OrderNumber},{order.ProductCode},{order.DeliveryQty}");
+                    }
+                }
+
+                // Let the user know the files were created successfully and their location //
+                MessageBox.Show($"{firstOrderFileName} & {secondOrderFileName} were successfully created in directory: \n\n{AppDomain.CurrentDomain.BaseDirectory + folderName}", "Success!");
+            }
+            catch (Exception ex)
+            {
+                lblErrorMessage.Text = ex.Message;
+            }
         }
 
         #endregion
