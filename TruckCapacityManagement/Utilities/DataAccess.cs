@@ -26,7 +26,7 @@ namespace TruckCapacityManagement.Utilities
             // If the file name is invalid, don't go any further //
             if (!IsValidFileName(Path.GetFileNameWithoutExtension(openFileDialog.FileName)))
             {
-                UIController.SetErrorMessage($"Invalid file name. Please use the naming convention [{AppConstants.OrderFileNamePrefix}-{AppConstants.DateFormatYYYYMMDD.ToUpper()}].");
+                UIController.SetErrorMessage($"Invalid file name. Please use the naming convention [{AppConstants.OrderFileNamePrefix}{AppConstants.DateFormatYYYYMMDD.ToUpper()}].");
                 UIController.SetUIEnabledValue(false);
                 return orders;
             }
