@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TruckCapacityManagement.Constants;
 using TruckCapacityManagement.Controllers;
 using TruckCapacityManagement.Models;
 
@@ -38,22 +39,34 @@ namespace TruckCapacityManagement.Utilities
                 return newOrders;
             }
 
-            // Get the first order //
-            List<Order> firstOrder = GetFirstOrder(orders, truckCapacity, maximumReductionPercentage);
-
-            // If the order could not be scaled back, there is no point attempting to scale it back again //
-            if (firstOrder.Count == 0 || firstOrder.Sum(order => order.DeliveryQty) == 0)
+            for (int i = 0; i < AppConstants.NumberOfOrderFilesToCreate; i++)
             {
-                UIController.SetErrorMessage("Order could not be scaled back with the given Truck Capacity and Reduction Percentage.");
-                return newOrders;
+                List<Order> scaledOrders = new List<Order>();
+                
+                // it's the first order //
+                if (i == 0)
+                {
+                    scaledOrders = GetScaledOrders(orders, truckCapacity, maximumReductionPercentage, true);
+
+                }
+                // it's a subsequent order //
+                else
+                {
+                    scaledOrders = GetScaledOrders(newOrders[i-1], truckCapacity, maximumReductionPercentage, false);
+                }
+
+                // if successfully scaled, add it to list of new orders otherwise stop trying to scale subsequent orders //
+                if (scaledOrders.Count > 0)
+                {
+                    newOrders.Add(scaledOrders);
+                }
+                // otherwise stop trying to scale subsequent orders //
+                else
+                {
+                    break;
+                }
             }
 
-            // If we can successfuly scale back the first order, try create a second order //
-            List<Order> secondOrder = GetSecondOrder(firstOrder, truckCapacity, maximumReductionPercentage);
-
-            // Return both orders //
-            newOrders.Add(firstOrder);
-            newOrders.Add(secondOrder);
             return newOrders;          
         }
 
@@ -73,19 +86,32 @@ namespace TruckCapacityManagement.Utilities
             }
         }
 
-        /// <summary>
-        /// Responsible for calculating how much to reduce the Order Quantities by for the first delivery.
-        /// </summary>
-        /// <returns></returns>
-        private static List<Order> GetFirstOrder(List<Order> orders, decimal truckCapacity, decimal maximumReductionPercentage)
+        private static List<Order> GetScaledOrders(List<Order> orders, decimal truckCapacity, decimal maximumReductionPercentage, bool firstOrder)
         {
             // First get the order quantity to meet the capacity of the truck //
-            List<Order> firstOrder = new List<Order>();
+            List<Order> scaledOrders = new List<Order>();
 
             try
             {
+                // Get the sum of OrderQty //
+                int orderQtySum = orders.Sum(order => firstOrder ? order.OrderQty : order.RemainingQty);
+
+                if (orderQtySum == 0)
+                {
+                    return scaledOrders;
+                }
+
+                // First check to see if the remaining can fit on the next delivery //
+                if (!firstOrder && ThereIsEnoughCapacityOnTruck(orderQtySum, truckCapacity))
+                {
+                    scaledOrders = PutRemainingOrdersInDelivery(orders, maximumReductionPercentage);
+                    return scaledOrders;
+                }
+
+                // The total quantity is more than the truck capacity, therefore we need to apply scaling logic //
+
                 // Get the total orders divided by total capacity //
-                decimal scaleFactor = orders.Sum(order => order.OrderQty) / truckCapacity;
+                decimal scaleFactor = orderQtySum / truckCapacity;
 
                 // divide by the scale factor to get an even amount for the delivery //
                 // and also set the minimum scaled amount allowed to ensure it doesn't go under the minimum amount allowed in a delivery //
@@ -97,94 +123,19 @@ namespace TruckCapacityManagement.Utilities
                         OrderNumber = order.OrderNumber,
                         ProductCode = order.ProductCode,
                         OrderQty = order.OrderQty,
-                        ScaledOrderQty = Convert.ToInt32(Math.Round(order.OrderQty / scaleFactor, 0)),
-                        MinimumScaledOrderQtyAllowed = Convert.ToInt32(Math.Round(order.OrderQty / maximumReductionPercentage, 0)),
-                        RemainingQty = order.OrderQty
-                    };
-
-                    // If the Scaled Order Quantity is under the minimum amount allowed, it can't be delivered, so the amount to delivery amount should be 0 //
-                    if (scaledOrder.ScaledOrderQty >= scaledOrder.MinimumScaledOrderQtyAllowed)
-                    {
-                        scaledOrder.DeliveryQty = scaledOrder.ScaledOrderQty;
-                        scaledOrder.RemainingQty = scaledOrder.OrderQty - scaledOrder.ScaledOrderQty;
-                    }
-
-                    firstOrder.Add(scaledOrder);
-                }
-            }
-            catch (Exception ex)
-            {
-                UIController.SetErrorMessage(ex.Message);
-            }
-
-            return firstOrder;
-        }
-
-        private static List<Order> GetSecondOrder(List<Order> firstOrder, decimal truckCapacity, decimal maximumReductionPercentage)
-        {
-            // First get the order quantity to meet the capacity of the truck //
-            List<Order> secondOrder = new List<Order>();
-
-            try
-            {
-                // First check to see if the remaining can fit on the next delivery //
-                if (ThereIsEnoughCapacityOnTruck(firstOrder.Sum(order => order.RemainingQty), truckCapacity))
-                {
-                    foreach (Order order in firstOrder)
-                    {
-                        Order scaledOrder = new Order
-                        {
-                            Customer = order.Customer,
-                            OrderNumber = order.OrderNumber,
-                            ProductCode = order.ProductCode,
-                            OrderQty = order.OrderQty,
-                            ScaledOrderQty = order.RemainingQty,
-                            MinimumScaledOrderQtyAllowed = Convert.ToInt32(Math.Round(order.RemainingQty / maximumReductionPercentage, 0)), // This may be incorrect if the percentage is supposed to be based on the Original Order Qty and not the Remaining Qty //
-                            RemainingQty = 0
-                        };
-
-                        // If the Scaled Order Quantity is under the minimum amount allowed, it can't be delivered, so the amount to delivery amount should be 0 //
-                        if (scaledOrder.ScaledOrderQty >= scaledOrder.MinimumScaledOrderQtyAllowed)
-                        {
-                            scaledOrder.DeliveryQty = scaledOrder.ScaledOrderQty;
-                        }
-
-                        secondOrder.Add(scaledOrder);
-                    }
-
-                    // If there is enough to fit the capacity of the truck, we can just deliver the remaining //
-                    // As long as the qty isn't lower than the minimum allowed //
-                    return secondOrder;
-                }
-
-                // The total quantity is more than the truck capacity, therefore we need to apply the same scaling logic as before //
-
-                // Get the total orders divided by total capacity //
-                decimal scaleFactor = firstOrder.Sum(order => order.RemainingQty) / maximumReductionPercentage;
-
-                // divide by the scale factor to get an even amount for the delivery //
-                // and also set the minimum scaled amount allowed to ensure it doesn't go under the minimum amount allowed in a delivery //
-                foreach (Order order in firstOrder)
-                {
-                    Order scaledOrder = new Order
-                    {
-                        Customer = order.Customer,
-                        OrderNumber = order.OrderNumber,
-                        ProductCode = order.ProductCode,
-                        OrderQty = order.OrderQty,
-                        ScaledOrderQty = Convert.ToInt32(Math.Round(order.RemainingQty / scaleFactor, 0)),
-                        MinimumScaledOrderQtyAllowed = Convert.ToInt32(Math.Round(order.RemainingQty / maximumReductionPercentage, 0)), // This may be incorrect if the percentage is supposed to be based on the Original Order Qty and not the Remaining Qty //
+                        ScaledOrderQty = firstOrder ? Convert.ToInt32(Math.Round(order.OrderQty / scaleFactor, 0)) : Convert.ToInt32(Math.Round(order.RemainingQty / scaleFactor, 0)),
+                        MinimumScaledOrderQtyAllowed = firstOrder ? Convert.ToInt32(Math.Round(order.OrderQty / maximumReductionPercentage, 0)) : Convert.ToInt32(Math.Round(order.RemainingQty / maximumReductionPercentage, 0)), // This may be incorrect if the percentage is supposed to be based on the Original Order Qty and not the Remaining Qty //
                         RemainingQty = order.RemainingQty
                     };
 
-                    // If the Scaled Order Quantity is under the minimum amount allowed, it can't be delivered, so the amount to delivery amount should be 0 //
+                    // If the Scaled Order Quantity is under the minimum amount allowed, it can't be delivered, so the amount to deliver should be 0 //
                     if (scaledOrder.ScaledOrderQty >= scaledOrder.MinimumScaledOrderQtyAllowed)
                     {
                         scaledOrder.DeliveryQty = scaledOrder.ScaledOrderQty;
-                        scaledOrder.RemainingQty -= scaledOrder.ScaledOrderQty;
+                        scaledOrder.RemainingQty = firstOrder ? scaledOrder.OrderQty - scaledOrder.ScaledOrderQty : scaledOrder.RemainingQty - scaledOrder.ScaledOrderQty;
                     }
 
-                    secondOrder.Add(scaledOrder);
+                    scaledOrders.Add(scaledOrder);
                 }
             }
             catch (Exception ex)
@@ -192,7 +143,39 @@ namespace TruckCapacityManagement.Utilities
                 UIController.SetErrorMessage(ex.Message);
             }
 
-            return secondOrder;
+            return scaledOrders;
+        }
+
+        private static List<Order> PutRemainingOrdersInDelivery(List<Order> orders, decimal maximumReductionPercentage)
+        {
+            List<Order> scaledOrders = new List<Order>();
+
+            foreach (Order order in orders)
+            {
+                Order scaledOrder = new Order
+                {
+                    Customer = order.Customer,
+                    OrderNumber = order.OrderNumber,
+                    ProductCode = order.ProductCode,
+                    OrderQty = order.OrderQty,
+                    ScaledOrderQty = order.RemainingQty,
+                    MinimumScaledOrderQtyAllowed = Convert.ToInt32(Math.Round(order.RemainingQty / maximumReductionPercentage, 0)), // This may be incorrect on subsequent scaled orders if the percentage is supposed to be based on the Original Order Qty and not the Remaining Qty //
+                    RemainingQty = 0
+                };
+
+                // If the Scaled Order Quantity is under the minimum amount allowed, it can't be delivered, so the amount to delivery amount should be 0 //
+                if (scaledOrder.ScaledOrderQty >= scaledOrder.MinimumScaledOrderQtyAllowed)
+                {
+                    scaledOrder.DeliveryQty = scaledOrder.ScaledOrderQty;
+                }
+
+                scaledOrders.Add(scaledOrder);
+            }
+
+            // If there is enough to fit the capacity of the truck, we can just deliver the remaining //
+            // As long as the qty isn't lower than the minimum allowed //
+            // Some products may never get added for Delivery if they never meet the criteria for Truck Capacity & Reduction Percentage //
+            return scaledOrders;
         }
     }
 }
