@@ -58,9 +58,9 @@ namespace TruckCapacityManagement
             if (newOrders.Count == 2)
             {
                 FileCreation.CreateNewOrderFiles(DataAccess.GetOrderDate(), newOrders[0], newOrders[1]);
+                ShowMessageBox();
             }
 
-            ShowMessageBox();
             RefreshAllLabels();
             UIController.SetUIEnabledValue(false);
             ChangeStateOfRulesUI();
