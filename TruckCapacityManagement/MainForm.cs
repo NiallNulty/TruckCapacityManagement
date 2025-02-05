@@ -62,6 +62,7 @@ namespace TruckCapacityManagement
 
             ShowMessageBox();
             RefreshAllLabels();
+            UIController.SetUIEnabledValue(false);
             ChangeStateOfRulesUI();
         }
 
