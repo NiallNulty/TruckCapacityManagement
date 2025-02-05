@@ -58,7 +58,7 @@
             this.btnOpenFile.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnOpenFile.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btnOpenFile.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.btnOpenFile.Location = new System.Drawing.Point(344, 45);
+            this.btnOpenFile.Location = new System.Drawing.Point(344, 57);
             this.btnOpenFile.Name = "btnOpenFile";
             this.btnOpenFile.Size = new System.Drawing.Size(108, 37);
             this.btnOpenFile.TabIndex = 0;
@@ -82,9 +82,9 @@
             this.tableLayoutPanelMain.Location = new System.Drawing.Point(2, 2);
             this.tableLayoutPanelMain.Name = "tableLayoutPanelMain";
             this.tableLayoutPanelMain.RowCount = 6;
-            this.tableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 44.73684F));
-            this.tableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 55.26316F));
-            this.tableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
+            this.tableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 55.6701F));
+            this.tableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 44.3299F));
+            this.tableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 23F));
             this.tableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 38F));
             this.tableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 198F));
             this.tableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 90F));
@@ -97,7 +97,7 @@
             this.lblSelectedFileName.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.lblSelectedFileName.AutoSize = true;
             this.lblSelectedFileName.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblSelectedFileName.Location = new System.Drawing.Point(318, 94);
+            this.lblSelectedFileName.Location = new System.Drawing.Point(318, 97);
             this.lblSelectedFileName.Name = "lblSelectedFileName";
             this.lblSelectedFileName.Size = new System.Drawing.Size(160, 21);
             this.lblSelectedFileName.TabIndex = 2;
@@ -128,7 +128,7 @@
             this.tableLayoutPanelHeader.Name = "tableLayoutPanelHeader";
             this.tableLayoutPanelHeader.RowCount = 1;
             this.tableLayoutPanelHeader.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanelHeader.Size = new System.Drawing.Size(791, 36);
+            this.tableLayoutPanelHeader.Size = new System.Drawing.Size(791, 48);
             this.tableLayoutPanelHeader.TabIndex = 4;
             // 
             // lblHeader
@@ -136,7 +136,7 @@
             this.lblHeader.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblHeader.AutoSize = true;
             this.lblHeader.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblHeader.Location = new System.Drawing.Point(118, 7);
+            this.lblHeader.Location = new System.Drawing.Point(118, 13);
             this.lblHeader.Name = "lblHeader";
             this.lblHeader.Size = new System.Drawing.Size(82, 21);
             this.lblHeader.TabIndex = 5;
@@ -147,7 +147,7 @@
             this.pictureBoxLogo.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxLogo.Image")));
             this.pictureBoxLogo.Location = new System.Drawing.Point(3, 3);
             this.pictureBoxLogo.Name = "pictureBoxLogo";
-            this.pictureBoxLogo.Size = new System.Drawing.Size(108, 30);
+            this.pictureBoxLogo.Size = new System.Drawing.Size(108, 41);
             this.pictureBoxLogo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBoxLogo.TabIndex = 1;
             this.pictureBoxLogo.TabStop = false;
