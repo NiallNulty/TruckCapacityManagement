@@ -61,6 +61,13 @@ namespace TruckCapacityManagement
                 ShowMessageBox();
             }
 
+            // Create one new file if it's not possible to scale back any more for a second delivery //
+            if (newOrders.Count == 1)
+            {
+                FileCreation.CreateNewOrderFiles(DataAccess.GetOrderDate(), newOrders[0], null);
+                ShowMessageBox();
+            }
+
             RefreshAllLabels();
             UIController.SetUIEnabledValue(false);
             ChangeStateOfRulesUI();

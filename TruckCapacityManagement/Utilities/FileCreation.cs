@@ -22,6 +22,17 @@ namespace TruckCapacityManagement.Utilities
                 // The second file is the same name +1 day //
                 string secondOrderFileName = $"{AppConstants.OrderFileNamePrefix}{orderDate.AddDays(1).ToString(AppConstants.DateFormatYYYYMMDD)}{AppConstants.CSVFileFormat}";
 
+                // Delete pre-existing generated files //
+                if (File.Exists($"{AppConstants.NewOrdersFolderName}/{firstOrderFileName}"))
+                {
+                    File.Delete($"{AppConstants.NewOrdersFolderName}/{firstOrderFileName}");
+                }
+
+                if (File.Exists($"{AppConstants.NewOrdersFolderName}/{secondOrderFileName}"))
+                {
+                    File.Delete($"{AppConstants.NewOrdersFolderName}/{secondOrderFileName}");
+                }
+
                 // Write the first order to a csv //
                 using (StreamWriter streamWriter = new StreamWriter($"{AppConstants.NewOrdersFolderName}/{firstOrderFileName}"))
                 {
@@ -33,21 +44,30 @@ namespace TruckCapacityManagement.Utilities
                     }
                 }
 
-                // Write the second order to a csv //
-                using (StreamWriter streamWriter = new StreamWriter($"{AppConstants.NewOrdersFolderName}/{secondOrderFileName}"))
+                if (secondOrder != null)
                 {
-                    streamWriter.WriteLine($"{nameof(Order.Customer)},{nameof(Order.OrderNumber)},{nameof(Order.ProductCode)},{nameof(Order.OrderQty)}");
-
-                    foreach (Order order in secondOrder)
+                    // Write the second order to a csv //
+                    using (StreamWriter streamWriter = new StreamWriter($"{AppConstants.NewOrdersFolderName}/{secondOrderFileName}"))
                     {
-                        streamWriter.WriteLine($"{order.Customer},{order.OrderNumber},{order.ProductCode},{order.DeliveryQty}");
+                        streamWriter.WriteLine($"{nameof(Order.Customer)},{nameof(Order.OrderNumber)},{nameof(Order.ProductCode)},{nameof(Order.OrderQty)}");
+
+                        foreach (Order order in secondOrder)
+                        {
+                            streamWriter.WriteLine($"{order.Customer},{order.OrderNumber},{order.ProductCode},{order.DeliveryQty}");
+                        }
                     }
                 }
 
                 // Let the user know the outcome //
+                if (File.Exists($"{AppConstants.NewOrdersFolderName}/{firstOrderFileName}") &! File.Exists($"{AppConstants.NewOrdersFolderName}/{secondOrderFileName}"))
+                {
+                    UIController.SetMessageBoxText($"Only {firstOrderFileName} successfully created in directory: \n\n{AppDomain.CurrentDomain.BaseDirectory + AppConstants.NewOrdersFolderName}. Please try again with different Truck Capacity & Reduction Percentage", "Warning!");
+                    return;
+                }
                 if (File.Exists($"{AppConstants.NewOrdersFolderName}/{firstOrderFileName}")  && File.Exists($"{AppConstants.NewOrdersFolderName}/{secondOrderFileName}"))
                 {
                     UIController.SetMessageBoxText($"{firstOrderFileName} & {secondOrderFileName} were successfully created in directory: \n\n{AppDomain.CurrentDomain.BaseDirectory + AppConstants.NewOrdersFolderName}", "Success!");
+                    return;
                 }
                 else
                 {
